@@ -1,0 +1,1285 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* The AA-guaranteed interactive boundary — see `--nm-edge` below. */
+  --color-edge: var(--nm-edge);
+
+  --radius-sm: calc(var(--radius) * 0.45);
+  --radius-md: calc(var(--radius) * 0.65);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.35);
+  --radius-2xl: calc(var(--radius) * 1.75);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.8);
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ClinicFlow — "Indigo & Bone": neumorphic depth + glass, on warm neutrals.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Neumorphism renders a control in the SAME colour as its background and uses
+ * shadow alone to extrude it — a soft cast below for raised surfaces, a dual
+ * light source inside recessed ones. That is the look — and it is also, a WCAG 1.4.11
+ * failure: a control whose boundary is pure shadow has no 3:1 contrast against
+ * its surround, so it is invisible to low-vision users, in bright sunlight, and
+ * on the cheap TN panels a lot of Indian clinics actually run.
+ *
+ * This system keeps the look and fixes the failure with one rule:
+ *
+ *   Decorative depth comes from `--nm-hi` / `--nm-lo`.
+ *   Every INTERACTIVE boundary additionally carries `--nm-edge`, which is
+ *   held at >= 3:1 against its adjacent surface in both themes.
+ *
+ * So a button reads as a soft extruded pill, but it still has a real, legally
+ * legible outline. Depth is the aesthetic; the edge is the contract. A visit
+ * editor where the doctor cannot tell which box is the dose field is not a
+ * design opinion, it is a prescribing error.
+ *
+ * Surfaces are deliberately mid-tone (never #fff / #000) — neumorphism needs
+ * headroom on BOTH sides of the surface luminance for the dual shadow to read.
+ */
+:root {
+  /* ── surfaces: warm bone, not cool grey ────────────────────────────────── */
+  /* The neutrals carry hue 85 (warm) rather than 264 (cool slate). This is the
+     single biggest reason the interface no longer reads as a generic SaaS
+     template: cool grey + a bright accent is the default of the entire
+     category, and simply warming the neutral escapes it. */
+  --background: oklch(0.935 0.012 85); /* bone      #EDE9E1 */
+  --foreground: oklch(0.244 0.008 85); /* warm ink  #22201C  13.4:1 */
+  --card: oklch(0.959 0.01 87); /*            #F4F1EA */
+  --card-foreground: oklch(0.244 0.008 85);
+  --popover: oklch(0.972 0.008 87);
+  --popover-foreground: oklch(0.244 0.008 85);
+
+  /* ── deep indigo ───────────────────────────────────────────────────────── */
+  /* Indigo rather than the ubiquitous violet, and deep rather than neon: the
+     dye Bengal was built on, so it is rooted rather than borrowed. Being dark
+     also buys headroom — 7.65:1 as text on bone, against the 4.5 floor. */
+  --primary: oklch(0.406 0.126 271); /* #31418C */
+  --primary-foreground: oklch(0.975 0.008 85);
+  --secondary: oklch(0.898 0.018 84);
+  --secondary-foreground: oklch(0.3 0.02 84);
+  --muted: oklch(0.912 0.014 85);
+  --muted-foreground: oklch(0.51 0.014 84); /* 4.75:1 */
+  --accent: oklch(0.9 0.038 46); /* clay wash #F5D7C9 */
+  --accent-foreground: oklch(0.45 0.105 46); /* 5.70:1 on the wash */
+  --destructive: oklch(0.532 0.175 28);
+  --border: oklch(0.865 0.014 84); /* decorative rules only */
+  --input: oklch(0.865 0.014 84);
+  --ring: oklch(0.406 0.126 271);
+
+  /**
+   * The accessibility contract. Every focusable / clickable control borders
+   * with this, NOT with --border. Held >= 3:1 vs --background and --card so
+   * neumorphic softness never costs an affordance.
+   */
+  --nm-edge: oklch(0.608 0.012 84); /* 3.16:1 vs bone, 3.39:1 vs card */
+
+  /* ── light source ──────────────────────────────────────────────────────── */
+  /* Every shadow here is warm (hue 70), not blue-grey. A cool shadow on a warm
+     surface is what makes "warm" palettes still feel synthetic — the light
+     has to agree with the material it falls on.
+
+     --nm-hi / --nm-lo light the INNER bevel of recessed wells (inset, pressed).
+     --nm-cast-* are the OUTER drop shadow of raised surfaces. They are separate
+     tokens because the two jobs want opposite intensities: a well needs a
+     legible lip, a floating card needs to barely bruise the page. */
+  --nm-hi: oklch(1 0 0 / 0.75); /* inner bevel, up-left  */
+  --nm-lo: oklch(0.42 0.03 70 / 0.4); /* inner bevel, down-right */
+  --nm-cast-1: oklch(0.42 0.03 70 / 0.1); /* contact  */
+  --nm-cast-2: oklch(0.42 0.03 70 / 0.13); /* ambient  */
+  --nm-d: 5px; /* offset  */
+  --nm-b: 13px; /* blur    */
+  --nm-d-lg: 10px;
+  --nm-b-lg: 26px;
+
+  /* ── glass ─────────────────────────────────────────────────────────────── */
+  --glass-bg: oklch(0.97 0.01 86 / 0.6);
+  --glass-edge: oklch(1 0 0 / 0.7);
+  --glass-blur: 16px;
+
+  /* Liquid glass, resting state = over a LIGHT band, so the pane tints DOWN.
+     Warm, matching the bone it sits on — a neutral grey tint over warm bone
+     reads as dirt. See the `liquid-glass` utility for the inverse. */
+  --lg-tint: oklch(0.28 0.012 85 / 0.07);
+  --lg-rim: oklch(0.28 0.012 85 / 0.14);
+  --lg-lip: oklch(1 0 0 / 0.55);
+  --lg-keel: oklch(0.28 0.012 85 / 0.05);
+
+  /* ── ambient glow (indigo key, clay counter-light) ─────────────────────── */
+  --glow: oklch(0.45 0.13 271 / 0.28);
+  --glow-2: oklch(0.588 0.118 46 / 0.22);
+
+  --radius: 1rem;
+
+  /* ── charts: indigo → clay ramp ────────────────────────────────────────── */
+  --chart-1: oklch(0.406 0.126 271);
+  --chart-2: oklch(0.506 0.105 235);
+  --chart-3: oklch(0.479 0.078 161);
+  --chart-4: oklch(0.588 0.118 46);
+  --chart-5: oklch(0.516 0.105 72);
+
+  /* ── sidebar: indigo ink, the plane the app floats on ──────────────────── */
+  --sidebar: oklch(0.263 0.042 271);
+  --sidebar-foreground: oklch(0.93 0.01 85);
+  --sidebar-primary: oklch(0.66 0.115 271);
+  --sidebar-primary-foreground: oklch(0.99 0.005 85);
+  --sidebar-accent: oklch(0.325 0.045 271);
+  --sidebar-accent-foreground: oklch(0.96 0.008 85);
+  --sidebar-border: oklch(1 0 0 / 0.1);
+  --sidebar-ring: oklch(0.7 0.115 271);
+
+  /**
+   * ── semantic status ─────────────────────────────────────────────────────
+   * Lightness here is measured, not chosen. status.ts renders these as TEXT
+   * (`text-success`, `text-warning`, `text-info`) on --background, so each is
+   * pinned to a value that clears 4.5:1 there, leaving headroom for the 10%
+   * accent tint the badges sit on. Re-run the contrast audit before nudging
+   * any of them.
+   */
+  --success: oklch(0.479 0.078 161); /* pine   #2F6B4F  5.21:1 */
+  --success-foreground: oklch(0.99 0.005 85);
+  --warning: oklch(0.516 0.105 72); /* ochre  #8C5C0F  4.73:1 */
+  --warning-foreground: oklch(0.99 0.005 85);
+  --info: oklch(0.506 0.105 235); /* #086D98  4.74:1 */
+  --info-foreground: oklch(0.99 0.005 85);
+}
+
+/**
+ * Real dark mode — the first this product has had. Neumorphism is native here:
+ * the highlight becomes a lifted grey rather than white, and the shadow deepens
+ * toward black. Accents brighten and flip to dark foregrounds.
+ */
+.dark {
+  --background: oklch(0.225 0.012 80); /* warm charcoal, never blue-black */
+  --foreground: oklch(0.955 0.008 85); /* 15.0:1 */
+  --card: oklch(0.268 0.014 80);
+  --card-foreground: oklch(0.955 0.008 85);
+  --popover: oklch(0.29 0.015 80);
+  --popover-foreground: oklch(0.955 0.008 85);
+
+  --primary: oklch(0.72 0.115 271); /* indigo lifts to stay legible */
+  --primary-foreground: oklch(0.2 0.03 271); /* dark ink on it: 7.2:1 */
+  --secondary: oklch(0.315 0.016 80);
+  --secondary-foreground: oklch(0.93 0.008 85);
+  --muted: oklch(0.3 0.014 80);
+  --muted-foreground: oklch(0.73 0.014 84); /* 7.15:1 */
+  --accent: oklch(0.36 0.055 46);
+  --accent-foreground: oklch(0.85 0.075 46);
+  --destructive: oklch(0.7 0.155 28);
+  --border: oklch(1 0 0 / 0.1);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.72 0.115 271);
+
+  --nm-edge: oklch(0.615 0.014 82); /* 4.60:1 vs background */
+
+  --nm-hi: oklch(1 0 0 / 0.07); /* lifted grey, never white */
+  --nm-lo: oklch(0 0 0 / 0.55);
+  --nm-cast-1: oklch(0 0 0 / 0.4);
+  --nm-cast-2: oklch(0 0 0 / 0.45);
+
+  --glass-bg: oklch(0.29 0.015 80 / 0.58);
+  --glass-edge: oklch(1 0 0 / 0.12);
+
+  --glow: oklch(0.72 0.115 271 / 0.36);
+  --glow-2: oklch(0.7 0.12 46 / 0.26);
+
+  --chart-1: oklch(0.72 0.115 271);
+  --chart-2: oklch(0.73 0.1 235);
+  --chart-3: oklch(0.72 0.1 161);
+  --chart-4: oklch(0.74 0.12 46);
+  --chart-5: oklch(0.775 0.11 72);
+
+  --sidebar: oklch(0.196 0.028 271);
+  --sidebar-foreground: oklch(0.93 0.01 85);
+  --sidebar-primary: oklch(0.72 0.115 271);
+  --sidebar-primary-foreground: oklch(0.2 0.03 271);
+  --sidebar-accent: oklch(0.27 0.035 271);
+  --sidebar-accent-foreground: oklch(0.96 0.008 85);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: oklch(0.72 0.115 271);
+
+  --success: oklch(0.72 0.1 161);
+  --success-foreground: oklch(0.2 0.03 271);
+  --warning: oklch(0.775 0.11 72);
+  --warning-foreground: oklch(0.2 0.03 271);
+  --info: oklch(0.73 0.1 235);
+  --info-foreground: oklch(0.2 0.03 271);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* Jakarta's tight tracking is what gives the geometric, "designed" feel. */
+  h1,
+  h2,
+  h3,
+  .font-heading {
+    letter-spacing: -0.028em;
+    font-weight: 700;
+  }
+  h1 {
+    letter-spacing: -0.038em;
+  }
+}
+
+/* ═══ NEUMORPHIC DEPTH ══════════════════════════════════════════════════════
+   Four states. `raised` is the resting extrusion, `float` the hover lift,
+   `pressed` the active push-in, `inset` the permanently-recessed well used by
+   inputs and tracks. Each reads the light-source vars above, so they all
+   invert correctly in dark mode with no per-utility overrides.
+
+   ── Why the raised pair casts DOWN and not UP-LEFT ────────────────────────
+   Textbook neumorphism pairs a down-right shadow with an up-left white
+   highlight. That only works when the surface is lighter than the page behind
+   it AND the page is neutral. Ours is warm bone — so a white bloom is both
+   lighter and COOLER than the surface it sits on, and it stopped reading as
+   light and started reading as a smudge around every card. Dark mode had
+   already learned this (--nm-hi is a lifted grey there, never white); light
+   mode had not.
+
+   So raised/float now cast a plain warm drop shadow — contact + ambient,
+   vertically dominant, the way an object on a table actually behaves. The
+   dual light source survives where it never smudged: INSIDE the wells. */
+
+@utility shadow-nm-raised {
+  box-shadow:
+    0 1px 2px var(--nm-cast-1),
+    0 var(--nm-d) var(--nm-b) var(--nm-cast-2);
+}
+
+@utility shadow-nm-float {
+  box-shadow:
+    0 2px 4px var(--nm-cast-1),
+    0 var(--nm-d-lg) var(--nm-b-lg) var(--nm-cast-2);
+}
+
+@utility shadow-nm-pressed {
+  box-shadow:
+    inset calc(var(--nm-d) * -1) calc(var(--nm-d) * -1) var(--nm-b) var(--nm-hi),
+    inset var(--nm-d) var(--nm-d) var(--nm-b) var(--nm-lo);
+}
+
+/* Shallower than `pressed` — a resting well, not an active push. */
+@utility shadow-nm-inset {
+  box-shadow:
+    inset 2px 2px 5px var(--nm-lo),
+    inset -2px -2px 5px var(--nm-hi);
+}
+
+@utility shadow-nm-none {
+  box-shadow: none;
+}
+
+/**
+ * Dark surfaces living inside the LIGHT theme — the sidebar, the mobile tab
+ * bar, the landing CTA band, the waiting-room display. Without this they
+ * inherit the light lamp and paint a 95%-white highlight onto near-black,
+ * which reads as a glowing seam rather than an extrusion. Custom properties
+ * inherit, so putting this on the container fixes every descendant.
+ */
+@utility nm-dark-surface {
+  --nm-hi: oklch(1 0 0 / 0.07);
+  --nm-lo: oklch(0 0 0 / 0.55);
+  --nm-cast-1: oklch(0 0 0 / 0.4);
+  --nm-cast-2: oklch(0 0 0 / 0.45);
+  --nm-edge: oklch(0.615 0.014 82);
+}
+
+/* ═══ LIQUID GLASS ══════════════════════════════════════════════════════════
+   A pane that reads as a physical piece of glass rather than a translucent
+   rectangle. Five things together do that, and dropping any one of them makes
+   it look like a div with opacity:
+
+     1. blur + saturate + contrast — the page behind is diffused AND its
+                            colour deepens and pops, the way it does through
+                            real glass. Blur alone gives you frosted plastic;
+                            it's the saturation boost that makes what shows
+                            through read as vivid and "wet" rather than washed
+                            out grey.
+     2. a tint            — glass is never perfectly clear.
+     3. a rim             — the cut edge of the pane.
+     4. lip and keel      — a 1px inset highlight along the top edge and a 1px
+                            shade along the bottom. This is the whole trick:
+                            it makes the pane read as having THICKNESS. Being
+                            inset it cannot bloom outward, so it is not the
+                            halo that was just removed from the shadow system.
+     5. a specular sheen  — a soft white band across the top, added as a
+                            markup child in `site-header.tsx` (not here — it
+                            needs to clip to the pill via `overflow-hidden`,
+                            which a `@utility` can't put on its own parent).
+
+   ── What this deliberately does NOT attempt ───────────────────────────────
+   Apple's actual Liquid Glass bends the pixels behind it — real optical
+   refraction at the edge, via the OS compositor. The web equivalent is an SVG
+   `feDisplacementMap` referenced from `backdrop-filter: url(#id)`, and it was
+   deliberately left out: support for an SVG filter reference inside
+   `backdrop-filter` specifically (as opposed to `filter`) is inconsistent
+   across engines, and an unsupported filter function does not politely no-op
+   — depending on the engine it can blank the whole backdrop. This app's
+   audience is solo doctors on low-end Android Chrome, which is exactly the
+   tier most likely to hit that failure mode, and a nav that goes invisible is
+   a worse outcome than a nav that is merely less refractive than iOS. Five
+   plain-CSS layers get most of the way there without that risk.
+
+   ── Why the tint is a variable and not a value ────────────────────────────
+   A fixed tint only works over one kind of backdrop. This landing page
+   alternates bone and deep indigo bands, so a pane crossing it has to tint
+   DOWN over the light bands and UP over the dark ones — otherwise it either
+   vanishes or turns into a grey slab. The `[data-over]` block below flips
+   every one of these tokens; `site-header.tsx` writes the attribute as the
+   pane crosses each seam. */
+
+/* ⚠️ Do NOT hand-write `-webkit-backdrop-filter` here (or in `glass` /
+   `glass-dark`). Tailwind v4 runs Lightning CSS, which adds vendor prefixes
+   from the browserslist targets itself — and when it finds an author-written
+   prefixed copy it collapses the pair and keeps only the prefixed one. The
+   standard property silently disappears from the build and the blur stops
+   applying in Chrome. Both `glass` utilities had this bug and shipped
+   un-frosted; it went unnoticed only because nothing currently uses them.
+   Declare the standard property alone and let the toolchain prefix it. */
+@utility liquid-glass {
+  background: var(--lg-tint);
+  backdrop-filter: blur(14px) saturate(220%) contrast(1.08);
+  border-color: var(--lg-rim);
+  box-shadow:
+    0 1px 2px var(--nm-cast-1),
+    0 10px 30px var(--nm-cast-2),
+    inset 0 1px 0 var(--lg-lip),
+    inset 0 -1px 0 var(--lg-keel);
+}
+
+/* Over a DARK band the pane inverts: it tints up with white, its rim brightens,
+   and its drop shadow has to go black — the warm brown cast of the light theme
+   is invisible on indigo and just muddies the seam. */
+[data-over="dark"] {
+  --lg-tint: oklch(1 0 0 / 0.1);
+  --lg-rim: oklch(1 0 0 / 0.18);
+  --lg-lip: oklch(1 0 0 / 0.3);
+  --lg-keel: oklch(0 0 0 / 0.22);
+  --nm-cast-1: oklch(0 0 0 / 0.3);
+  --nm-cast-2: oklch(0 0 0 / 0.38);
+}
+
+/* ═══ GLASS ═════════════════════════════════════════════════════════════════
+   Frosted overlays for anything that floats ABOVE the neumorphic plane —
+   sticky headers, dialogs, popovers. Depth without competing extrusions. */
+
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-edge);
+}
+
+/* Elements sitting on the dark sidebar / hero need the inverse treatment. */
+@utility glass-dark {
+  background: oklch(0.2 0.02 272 / 0.5);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 0.12);
+}
+
+/* ═══ AMBIENT LIGHT ═════════════════════════════════════════════════════════ */
+
+/* Film grain over a dark band.
+   Large flat fields of one colour are what make a dark section look like a
+   filled rectangle rather than a lit room — a screen has no surface noise of
+   its own, so the eye reads a perfectly even field as flat. A few percent of
+   static breaks it up and the indigo starts reading as a material.
+
+   Implementation notes worth keeping:
+   - The noise is an inline `feTurbulence` data URI, so it is one tiny string in
+     the CSS with no extra request and nothing to 404. `#` and `%` must be
+     percent-escaped (`%23`, `%25`) or the URL terminates early.
+   - It goes on `::after` at `z-index: -1` so it sits above the band's own
+     background but below its content — the host needs `isolate`, or the
+     negative index escapes to the nearest stacking context and the grain
+     disappears behind the section entirely.
+   - `mix-blend-mode: overlay` is what makes it read as grain rather than as a
+     grey veil: it lightens and darkens the band rather than washing it. */
+@utility bg-grain {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.32;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+  }
+}
+
+/* Indigo bloom behind a hero or a hovered card. Decorative, always aria-hidden. */
+@utility glow-primary {
+  background: radial-gradient(circle at 50% 50%, var(--glow), transparent 68%);
+}
+
+@utility glow-clay {
+  background: radial-gradient(circle at 50% 50%, var(--glow-2), transparent 68%);
+}
+
+/* ── Rack focus ────────────────────────────────────────────────────────────
+   Legible type over a bright, busy film, with **nothing on the type at all**.
+
+   The measurement that started this: white type over the strip the hero `<h1>`
+   occupies scored **2.37:1** on the average pixel and **1.00:1** — literally the
+   same luminance as the text — at the brightest. Large text needs 3.0.
+
+   Two fixes were shipped and both were rejected, and the reason they failed is
+   the useful part. A scrim (an indigo ellipse, lifting on scroll) bought the
+   contrast honestly but paid in the only currency it had: at the density the
+   numbers demanded, a sunlit room became a dim one. Stacked `drop-shadow`s then
+   bought it on the letterforms instead — but chained drop-shadows each filter
+   the *result* of the last, so they compound into a dark rim, and a dark rim
+   around white type is a dated device that goes muddy at any strength worth
+   having. Softening it to a measured 24.3% mean darkening did not save it,
+   because the objection was never the amount. It was the halo.
+
+   **Both were fighting the wrong variable.** Text over film is not hard to read
+   only because the plate is bright — it is hard to read because the plate is
+   *busy*. Window frames, plant leaves, the edge of a face: high-frequency
+   detail competing with letterform edges. Luminance is the variable those two
+   attempts attacked; detail is the one that was actually hurting.
+
+   So this takes the detail out and leaves the light in. A masked
+   `backdrop-filter` behind the text block puts the plate out of focus while the
+   type stays perfectly sharp — the rack focus a camera operator would pull to
+   put a title on a busy shot. Blur also does something a scrim cannot: it is a
+   local average, so it *collapses the luminance range*. The blown-out highlight
+   that scored 1.00:1 is averaged with its neighbours and stops existing, which
+   is why the worst case improves far more than the mean does. That is the whole
+   trick, and it is why only a mild brightness trim is needed on top.
+
+   The mask is what keeps it invisible. A hard-edged blur region is a frosted
+   rectangle sitting on the footage; an ellipse faded over ~40% of its own
+   radius has no edge to find, so the frame simply goes soft towards the middle.
+
+   Cost: `backdrop-filter` over playing video is per-frame GPU work, unlike the
+   drop-shadows it replaces, which were paid once at paint. Acceptable here
+   because `hero-video.tsx` already refuses to play the film at all under
+   reduced-motion, Data Saver or 2G/3G — which is broadly the same population as
+   the weak-GPU one — and because the layer is a single fixed-size box, not a
+   filter on a moving element. If it ever needs to go, the fallback is the
+   `@supports` block below, not another shadow. */
+/* The plate, graded — and that is the entire mechanism. The type carries
+   nothing: no shadow, no stroke, no plate behind it.
+
+   **Why this and not the three things tried before it.** A scrim (translucent
+   indigo over the film) bought contrast but composited a colour *onto* the
+   picture, which lifts the blacks toward the tint and flattens the range —
+   that is what "muddy" actually is, and it is why it read as dim rather than
+   as dark. Stacked `drop-shadow`s moved the ink onto the letterforms instead
+   and kept the plate bright, but chained drop-shadows each filter the result of
+   the last, so they compound into a rim, and a dark rim around white type is a
+   dated device at any strength worth having. A masked `backdrop-filter` then
+   defocused the plate behind the text — which fixed the right variable, since
+   busy detail hurts legibility as much as luminance does — but blur is a local
+   average, so on a shot with a bright window it drags that brightness *into*
+   the middle and leaves a milky patch exactly where the headline sits.
+
+   `brightness()` is a multiply, not a composite. Black stays black, the range
+   is preserved, and saturation can be pushed back up on top. The result reads
+   as a room lit lower rather than as a picture with something laid over it —
+   sharp, colour intact, and dark enough that pure white type needs no help.
+   Measured across five frames of the loop, worst-case contrast over the `<h1>`
+   went from **1.15–1.91:1** untreated to **4.8–8.9:1**.
+
+   Cheap, too: one filter on one element, composited on the GPU, versus a
+   per-frame `backdrop-filter` region or a four-pass drop-shadow chain. */
+@utility hero-plate {
+  filter: brightness(0.46) saturate(1.28) contrast(1.06);
+}
+
+/* A specular sheen that follows the pointer. The component sets --mx/--my
+   (0–100%) on pointermove; the paint stays entirely on the compositor. */
+@utility spotlight {
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in oklab, var(--primary) 16%, transparent),
+    transparent 72%
+  );
+}
+
+/* ═══ RE-SKINNED LEGACY UTILITIES ═══════════════════════════════════════════
+   Names preserved (they're referenced across 30 routes) — visuals rebuilt for
+   the new language, so no markup had to change. */
+
+/* Was ruled register paper; now a faint technical grid under hero surfaces. */
+@utility bg-ruled {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--nm-edge) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--nm-edge) 12%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Diagonal hatch for blocked / unavailable calendar ranges — reads as
+   struck-through time without relying on colour alone. */
+@utility bg-hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in oklab, var(--muted-foreground) 18%, transparent) 0,
+    color-mix(in oklab, var(--muted-foreground) 18%, transparent) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@utility animate-rise {
+  animation: rise-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The trust belt used to be a `@keyframes` translate here. It is now integrated
+   frame by frame in `trust-marquee.tsx` so it can answer to scroll velocity and
+   reverse with scroll direction, which a keyframe animation cannot do — one
+   speed, one direction. The keyframe and its utility were deleted rather than
+   left behind; `[data-belt]` in the reduced-motion block below parks the belt. */
+
+@utility mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+/* Light sweeping across a CTA. Applied to an inner <span aria-hidden>. */
+@keyframes cta-shine {
+  0%,
+  62% {
+    transform: translateX(-130%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(240%) skewX(-12deg);
+  }
+}
+@utility btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+@utility btn-shine-bar {
+  position: absolute;
+  inset-block: 0;
+  width: 42%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    color-mix(in oklab, var(--primary-foreground) 34%, transparent),
+    transparent
+  );
+  animation: cta-shine 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+/* Same sweep, ink-tinted — for pale buttons where a light sheen vanishes. */
+@utility btn-shine-bar-ink {
+  position: absolute;
+  inset-block: 0;
+  width: 42%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    color-mix(in oklab, var(--primary) 20%, transparent),
+    transparent
+  );
+  animation: cta-shine 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+@utility animate-live-dot {
+  animation: live-dot 2s ease-in-out infinite;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@utility animate-pop {
+  animation: pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The three dots on a WhatsApp typing bubble. Each dot sets its own
+   animation-delay inline — in phase they'd read as one blinking bar. */
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@utility animate-typing-dot {
+  animation: typing-dot 1.25s ease-in-out infinite;
+}
+
+/* Slow drift for the ambient glow blobs behind the hero. */
+@keyframes glow-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -6%, 0) scale(1.12);
+  }
+}
+@utility animate-glow-drift {
+  animation: glow-drift 18s ease-in-out infinite;
+}
+
+/* Idle bob for the hero's floating UI fragments, so they breathe when the
+   pointer is still. Each fragment offsets its own `animation-delay` and
+   `animation-duration` — in phase, they'd read as one rigid sheet. */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+@utility animate-float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+/* ═══ WAITING-ROOM BOARD ════════════════════════════════════════════════════ */
+
+/* The serving token changing is the only event on the board anyone is waiting
+   for, and a room full of people is not staring at the screen when it happens.
+   The number arrives with a scale-and-settle rather than swapping silently, so
+   peripheral vision catches it and heads come up. Replayed by remounting the
+   element on a key change — restarting a CSS animation any other way means
+   forcing a reflow. */
+@keyframes token-arrive {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@utility animate-token-arrive {
+  animation: token-arrive 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* A halo that fires once when the token changes, then stops — the board must
+   pull attention at the moment of the change and never after, or it becomes a
+   flashing sign nobody looks at. */
+@keyframes token-halo {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+@utility animate-token-halo {
+  animation: token-halo 1.1s ease-out both;
+}
+
+/* Burn-in mitigation. This screen shows near-identical bright content in the
+   same place for eight hours a day on panels that were never sold for signage,
+   and a permanently ghosted "NOW IN CONSULTATION" is a hardware failure the
+   clinic pays for. Twelve pixels of drift over a quarter of an hour is enough
+   to keep any single pixel from holding one value all day.
+
+   DELIBERATELY NOT in the `prefers-reduced-motion` block below, and it is the
+   only exemption in this file. That block exists to stop motion a viewer can
+   perceive; 12px over 900 seconds is roughly one pixel every 75 seconds, which
+   is beneath the threshold of perceptible movement. Switching it off would not
+   spare anyone discomfort — it would only take away the panel protection from
+   the displays whose owner happened to enable an OS accessibility setting. */
+@keyframes board-drift {
+  0%,
+  100% {
+    transform: translate3d(-6px, -6px, 0);
+  }
+  50% {
+    transform: translate3d(6px, 6px, 0);
+  }
+}
+@utility animate-board-drift {
+  animation: board-drift 900s ease-in-out infinite;
+}
+
+/* ═══ RANGE INPUT ═══════════════════════════════════════════════════════════
+   The pricing slider keeps the native <input type="range"> — its keyboard
+   handling, its ARIA and its touch target are all things a div would have to
+   reimplement badly. Only the paint is replaced.
+
+   The track is made transparent rather than styled, because the component
+   draws its own rail and fill as two divs *behind* the input; a painted native
+   track would cover them. The thumb is the only part left visible, and its
+   negative margin is what centres it on a track it no longer has — the browser
+   aligns the thumb to the top of the runnable track, so half the difference
+   between thumb and track height has to come back off by hand. */
+@utility range-glass {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+
+  &::-webkit-slider-runnable-track {
+    height: 0.5rem;
+    background: transparent;
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    height: 1.25rem;
+    width: 1.25rem;
+    margin-top: -0.375rem;
+    border-radius: 999px;
+    border: 3px solid oklch(1 0 0 / 0.92);
+    background: var(--sidebar-primary);
+    box-shadow: 0 2px 10px oklch(0 0 0 / 0.45);
+    transition: transform 150ms ease;
+  }
+  &:active::-webkit-slider-thumb {
+    transform: scale(1.12);
+  }
+
+  &::-moz-range-track {
+    height: 0.5rem;
+    background: transparent;
+  }
+  &::-moz-range-thumb {
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 999px;
+    border: 3px solid oklch(1 0 0 / 0.92);
+    background: var(--sidebar-primary);
+    box-shadow: 0 2px 10px oklch(0 0 0 / 0.45);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sidebar-ring);
+    outline-offset: 6px;
+    border-radius: 999px;
+  }
+}
+
+/* ═══ NATIVE DISCLOSURE ANIMATION ═══════════════════════════════════════════
+   The FAQ stays on real <details>/<summary> — keyboard accessible, correctly
+   exposed, and open-able before a byte of JS has run, which matters because it
+   is the section a sceptical visitor reaches for on a slow connection.
+
+   Until recently the price of that was an instant, unanimated snap. These two
+   rules buy the animation without giving up the element: `interpolate-size`
+   lets `auto` participate in a transition, and `::details-content` is the
+   browser's own handle on the collapsible part. `allow-discrete` carries
+   `content-visibility` across the transition so the panel is not yanked out of
+   the accessibility tree the instant it starts closing.
+
+   Both are progressive enhancement by construction. A browser that does not
+   know these selectors ignores the whole block and the disclosure opens
+   instantly, exactly as it did before — no fallback to write, nothing to
+   detect. */
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+
+details[data-faq]::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition:
+    block-size 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    content-visibility 300ms allow-discrete;
+}
+details[data-faq][open]::details-content {
+  block-size: auto;
+}
+
+/* Lenis (landing page only — see components/landing/smooth-scroll.tsx).
+   Inlined rather than importing `lenis/dist/lenis.css` so the whole global
+   cascade stays readable in this one file. Lenis adds `.lenis` to <html> only
+   while it is mounted, so none of this applies to the clinical app. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* A nav that is a full-width bar at the top of the page and a floating pill
+   once you start reading. `site-header.tsx` flips `data-scrolled` on the
+   element; the morph itself is CSS so it never costs a React render. */
+/* Carries the nav across BOTH of its transitions: transparent → glass at the
+   scroll threshold, and light tint → dark tint at each band seam. The second is
+   why background/border/shadow are timed together — they are the tint, and a
+   seam crossing where they arrive separately reads as a flicker. */
+@utility header-morph {
+  transition:
+    max-width 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    backdrop-filter 300ms ease;
+}
+
+/* ── The boot curtain ──────────────────────────────────────────────────────
+   A plate over the landing page while the hero film buffers, which then parts
+   from the middle. `page-curtain.tsx` owns the state machine and documents it;
+   this is only the paint.
+
+   **Hidden by default and shown by the attribute**, never the reverse. A plate
+   that is visible in the server HTML and needs JavaScript to remove it is one
+   failed hydration away from an unusable site; this way a visitor with no JS
+   never sees it at all, because `data-boot` is only ever written by script.
+
+   Everything animates `transform` and `opacity` only, so the whole sequence is
+   composited and none of it can contend with the video decoding behind it. */
+.page-curtain {
+  display: none;
+}
+
+html[data-boot] .page-curtain {
+  display: block;
+  position: fixed;
+  inset: 0;
+  /* Above the header (z-40) and its progress hairline (z-50). */
+  z-index: 100;
+}
+
+/* Swallow input while the plate is up — a button pressed through an opaque
+   overlay is a click the visitor cannot possibly have meant. Released the
+   instant the leaves start moving, so the page is live before it is uncovered. */
+html[data-boot="loading"] .page-curtain {
+  pointer-events: auto;
+}
+html[data-boot="opening"] .page-curtain {
+  pointer-events: none;
+}
+
+/* No scrolling behind the plate. Scrolling while covered would also bury the
+   pinned hero stage (see `hero-video.tsx`), which pauses the very film this
+   sequence is waiting for. */
+html[data-boot="loading"] {
+  overflow: hidden;
+}
+
+/* The hero's entrances are held at frame zero, then released — `both` fill
+   means a paused animation sits on its `from` keyframe, which is exactly the
+   pre-entrance state we want to hold. Resuming replays them from the start with
+   their staggered delays intact, so the headline, promise and buttons still
+   arrive in sequence — just into an open stage instead of a closed one. */
+html[data-boot="loading"] .animate-rise {
+  animation-play-state: paused;
+}
+
+/* Each leaf is a hair over half the viewport so no sub-pixel gap at the join
+   can show the page through before the reveal. They are opaque and the same
+   colour, so the overlap is invisible. */
+.page-curtain-leaf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: var(--sidebar);
+  will-change: transform;
+}
+.page-curtain-leaf-top {
+  top: 0;
+}
+.page-curtain-leaf-bottom {
+  bottom: 0;
+}
+
+@keyframes curtain-part-up {
+  to {
+    transform: translate3d(0, -100%, 0);
+  }
+}
+@keyframes curtain-part-down {
+  to {
+    transform: translate3d(0, 100%, 0);
+  }
+}
+
+/* `easeInOutQuart` — slow to commit, then decisive. A linear or ease-out part
+   reads as a panel being dragged; this reads as something opening. The delay
+   lets the badge clear first, so the wordmark is never seen torn in half by the
+   join it is sitting on. */
+html[data-boot="opening"] .page-curtain-leaf-top {
+  animation: curtain-part-up 1000ms cubic-bezier(0.76, 0, 0.24, 1) 150ms forwards;
+}
+html[data-boot="opening"] .page-curtain-leaf-bottom {
+  animation: curtain-part-down 1000ms cubic-bezier(0.76, 0, 0.24, 1) 150ms forwards;
+}
+
+/* The strike: a hairline of light along the join, blooming outward as the
+   leaves separate. It is the only bright thing in the sequence, and it sells
+   the parting as light getting out rather than as two divs translating. */
+.page-curtain-strike {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--sidebar-primary) 60%, white),
+    transparent
+  );
+}
+@keyframes curtain-strike {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.25);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+html[data-boot="opening"] .page-curtain-strike {
+  animation: curtain-strike 720ms ease-out 110ms forwards;
+}
+
+.page-curtain-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+}
+/* A bloom behind the mark, so the plate is a lit room rather than a flat fill.
+   `::before` keeps it out of the markup — it is pure decoration on an element
+   that is already `aria-hidden`. */
+.page-curtain-badge::before {
+  content: "";
+  position: absolute;
+  width: 32rem;
+  height: 32rem;
+  border-radius: 50%;
+  background: var(--glow);
+  opacity: 0.85;
+  filter: blur(90px);
+}
+.page-curtain-badge > * {
+  position: relative;
+}
+
+/* The wordmark types on, one letter at a time. `--i` comes from the markup and
+   is the letter's index; everything else is one rule.
+
+   `both` fill is what makes the delay work as a hold: without it a letter with
+   a 200ms delay would paint at full opacity for those 200ms and then jump back
+   to the start of the animation, which reads as a flicker rather than a stagger. */
+.page-curtain-word > span {
+  display: inline-block;
+  white-space: pre;
+}
+@keyframes curtain-letter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.42em, 0);
+  }
+}
+html[data-boot="loading"] .page-curtain-word > span {
+  animation: curtain-letter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i) * 30ms + 120ms);
+}
+
+@keyframes curtain-badge-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+}
+@keyframes curtain-badge-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0) scale(0.97);
+  }
+}
+html[data-boot="loading"] .page-curtain-badge {
+  animation: curtain-badge-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+html[data-boot="opening"] .page-curtain-badge {
+  animation: curtain-badge-out 260ms cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+.page-curtain-track {
+  margin-top: 0.5rem;
+  width: 132px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklab, white 14%, transparent);
+}
+.page-curtain-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transform: scaleX(0.03);
+  transform-origin: left center;
+  background: var(--sidebar-primary);
+}
+/* Eases toward 92% across roughly the window a cold fetch of the film takes,
+   and is completed by the `opening` rule below rather than by reaching the end
+   on its own. So it never sits full while still waiting, and never reads as
+   finished before the thing it is measuring is. */
+@keyframes curtain-fill {
+  to {
+    transform: scaleX(0.92);
+  }
+}
+html[data-boot="loading"] .page-curtain-fill {
+  animation: curtain-fill 2000ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+html[data-boot="opening"] .page-curtain-fill {
+  transform: scaleX(1);
+  transition: transform 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .btn-shine-bar,
+  .btn-shine-bar-ink,
+  .animate-live-dot,
+  .animate-pop,
+  .animate-glow-drift,
+  .animate-float-slow,
+  .animate-typing-dot,
+  .animate-token-arrive,
+  .animate-token-halo {
+    animation: none;
+  }
+  /* `text-cinema` deliberately has no rule here. It is a static shadow, not a
+     motion, and it is the only thing holding the hero headline legible over the
+     film — switching it off under reduced motion would make the page unreadable
+     for exactly the visitors least able to compensate. */
+  .header-morph {
+    transition: none;
+  }
+  details[data-faq]::details-content {
+    transition: none;
+  }
+
+  /* The boot curtain keeps its *job* and loses its choreography. It cannot
+     simply be deleted here: it is what stops the page being interactive and
+     scrollable while it is on screen, and `page-curtain.tsx` still removes it on
+     the same schedule. But the leaves cross-fade instead of parting, the strike
+     never blooms, and the progress hairline does not creep — a full-viewport
+     slide is the single most vestibular thing on this page.
+
+     In practice this is also very brief: the film never plays under reduced
+     motion, so `HeroVideo` reports ready immediately and the component drops its
+     minimum-display floor to zero for exactly these visitors. */
+  html[data-boot="opening"] .page-curtain-leaf-top,
+  html[data-boot="opening"] .page-curtain-leaf-bottom,
+  html[data-boot="opening"] .page-curtain-badge,
+  html[data-boot="loading"] .page-curtain-badge,
+  html[data-boot="loading"] .page-curtain-word > span {
+    animation: none;
+  }
+  html[data-boot="opening"] .page-curtain {
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+  html[data-boot="loading"] .page-curtain-fill,
+  html[data-boot="opening"] .page-curtain-strike {
+    animation: none;
+  }
+
+  /* ── Scroll-driven effects are reduced HERE, in CSS, and never by branching
+     the JSX on `useReducedMotion()`.
+
+     The server cannot know a visitor's motion preference, so a component that
+     renders one tree for reduced motion and another for full motion always
+     mismatches on hydration for the people who set the preference — the exact
+     group least well served by a client-side re-render of the whole page. So
+     the markup is identical for everyone and these rules switch the behaviour
+     off. `!important` is required: motion writes to the inline style
+     attribute, which otherwise wins. */
+
+  /* Word-by-word reveal → a plain, fully legible paragraph. */
+  [data-scrub-word] {
+    opacity: 1 !important;
+  }
+
+  /* Masked heading reveal → a heading that is simply already there. */
+  [data-split-word] {
+    transform: none !important;
+  }
+
+  /* The scroll-reactive trust belt parks. Its frame loop keeps running (it is
+     one cheap MotionValue write and it is already gated on visibility) but the
+     transform never lands, so the row is static and fully legible. */
+  [data-belt] {
+    transform: none !important;
+  }
+
+  /* The looping WhatsApp thread stops looping and shows the whole
+     conversation at once. The timer in `wa-thread.tsx` keeps running — it is
+     cheap, and stopping it would mean branching the tree on a preference the
+     server cannot know, which hydration-mismatches the page for exactly the
+     people who set it. The messages just stop being hidden. */
+  [data-wa-bubble] {
+    opacity: 1 !important;
+  }
+  [data-wa-typing] {
+    display: none !important;
+  }
+
+  /* The scrubbed clinic day → six fully lit beats, read as one plain sentence.
+
+     The lit rail is removed rather than frozen: a bar sweeping a day is the most
+     vestibular thing on this page, and every beat prints its own clock time, so
+     the rail was the ornament and never the record. Its unlit twin stays and
+     still joins the nodes into a timeline.
+
+     The descendant selector is deliberate. A beat animates its node, its time,
+     its words and its trailing proof block *separately*, so pinning the `<li>`
+     alone would leave the proof at `opacity: 0` — invisible copy, which is worse
+     than the motion it was meant to replace. `[data-scrub-word]` above already
+     covers the words; this repeats it harmlessly rather than relying on the two
+     rules staying in agreement. */
+  [data-day-rail],
+  [data-day-halo] {
+    display: none !important;
+  }
+  [data-day-event],
+  [data-day-event] * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Pinned stacking panels → ordinary stacked sections. Retained although
+     nothing currently renders `[data-stack-panel]`: `stack-panels.tsx` is in
+     assets/retired-components and this rule is what makes it safe to revive. */
+  [data-stack-panel] {
+    position: static !important;
+    height: auto !important;
+    transform: none !important;
+    padding-block: 4rem;
+  }
+  [data-stack-veil] {
+    display: none !important;
+  }
+
+  /* The playable demo keeps working — it is driven entirely by taps, and
+     removing it would remove content, not motion. Only its slides' travel is
+     dropped; the fades stay, so `AnimatePresence` can still retire a step. */
+  [data-demo-anim] {
+    transform: none !important;
+  }
+
+  /* Parallax and 3D-tilt layers stop tracking the pointer and the scroll.
+     `opacity` is included because the hero fragments' scroll-scrubbed pop-in
+     (`hero-fragments.tsx`) drives it from the same scroll value as the
+     transform — without this they would stay at whatever opacity the visitor
+     happened to stop scrolling at, or never reach 1 at all if reduced motion
+     is set before the page is ever scrolled. */
+  [data-parallax] {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  [data-spotlight] {
+    display: none !important;
+  }
+}
