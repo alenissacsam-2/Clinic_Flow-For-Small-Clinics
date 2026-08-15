@@ -43,3 +43,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw video masters (the shipped cut is public/hero.mp4)
+/*.mp4
+
+# vendored tooling, not part of the app
+/.agents/
+/skills/
+/liquid-glass-skill/
+/.skills_repo_temp/

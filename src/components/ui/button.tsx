@@ -34,6 +34,7 @@ const buttonVariants = cva(
     "outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/45",
     "disabled:pointer-events-none disabled:opacity-45 disabled:shadow-nm-none",
     "aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/25",
+    "active:not-aria-[haspopup]:scale-[0.97]",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ],
   {

@@ -141,7 +141,7 @@ export function QueueList({ rows }: { rows: QueueRow[] }) {
                 it. The patient's name is the one thing in the row that must
                 never wrap. */}
             <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
-              <Badge variant="outline" className={cn(s.badge, "transition-all duration-200")}>
+              <Badge variant="outline" className={cn(s.badge, "transition-colors duration-200")}>
                 {s.label}
               </Badge>
 

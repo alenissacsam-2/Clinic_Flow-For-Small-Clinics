@@ -1,0 +1,41 @@
+# Files that must never be uploaded to a deployment.
+#
+# `vercel deploy` from the CLI uploads the working directory, not the git index,
+# so anything sitting untracked next to the source goes up with it. This repo
+# accumulates raw video masters (tens of MB each) and vendored skill/agent
+# directories that have nothing to do with the build. They inflate every upload,
+# count against the deployment size limit, and — for the source footage — would
+# be publicly reachable if they ever landed under `public/`.
+#
+# Deployments driven by the Git integration only ever see committed files, so
+# this is belt-and-braces there. It is load-bearing for CLI deploys.
+
+# ── Raw video masters ─────────────────────────────────────────────────────
+# The shipped, compressed cut lives at `public/hero.mp4`. These are the sources
+# it was cut from, and they sit in the repo root.
+#
+# Anchored to the root with a leading slash rather than written as `*.mp4` with
+# a `!public/hero.mp4` exception: if the negation were ever mis-evaluated the
+# site would deploy with no hero film at all, and this pattern cannot reach
+# inside `public/` to begin with.
+/*.mp4
+
+# ── Tooling that is not part of the app ───────────────────────────────────
+.agents/
+skills/
+liquid-glass-skill/
+.skills_repo_temp/
+.claude/
+
+# ── Test output and local artifacts ───────────────────────────────────────
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+coverage/
+tests/
+
+# ── Docs ──────────────────────────────────────────────────────────────────
+README.md
+AGENTS.md
+CLAUDE.md

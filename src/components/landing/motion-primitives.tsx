@@ -48,8 +48,8 @@ export function Reveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, transform: `translateY(${y}px)` }}
+      whileInView={{ opacity: 1, transform: "translateY(0px)" }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.7, ease: EASE, delay }}
     >
@@ -64,16 +64,16 @@ const staggerParent = (stagger: number, delay: number): Variants => ({
 })
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+  hidden: { opacity: 0, transform: "translateY(20px)" },
+  show: { opacity: 1, transform: "translateY(0px)", transition: { duration: 0.6, ease: EASE } },
 }
 
 const popVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.6 },
+  hidden: { opacity: 0, transform: "scale(0.6)" },
   show: {
     opacity: 1,
-    scale: 1,
-    transition: { type: "spring", stiffness: 260, damping: 20 },
+    transform: "scale(1)",
+    transition: { type: "spring", bounce: 0, duration: 0.4 },
   },
 }
 

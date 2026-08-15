@@ -77,7 +77,7 @@ export function PricingSlider({ price }: { price: number }) {
           aria-hidden
           className="absolute left-0 h-2 rounded-full bg-sidebar-primary"
           animate={{ width: `calc(${THUMB}px + ${fill} * (100% - ${THUMB * 2}px))` }}
-          transition={{ type: "spring", stiffness: 320, damping: 30 }}
+          transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         />
         {/* The native input keeps its own keyboard handling, its own ARIA and
             its own touch target. Only the paint is replaced — the track is made

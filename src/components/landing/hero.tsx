@@ -104,17 +104,6 @@ export function Hero({ demoSlug }: { demoSlug: string }) {
     >
       <HeroVideo className="hero-plate absolute inset-0 -z-20 size-full object-cover" />
 
-      {/* Top-only gradient — a surface for the glass nav to sit on, and nothing
-          more. `h-64` fades out well above the headline, so the film runs at
-          full brightness behind every word below it.
-          `from-black/90` rather than the original `/70` — the source clip has a
-          bright light-streak pass through this exact band, and 70% still let it
-          wash the bar out. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 bg-gradient-to-b from-black/90 to-transparent"
-      />
-
       <div className="relative mx-auto w-full max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="animate-rise text-balance font-heading text-[2.3rem] leading-[1.04] font-extrabold tracking-[-0.04em] [animation-delay:80ms] sm:text-6xl sm:leading-[1.02] lg:text-[4.5rem]">

@@ -147,10 +147,11 @@
   /* Liquid glass, resting state = over a LIGHT band, so the pane tints DOWN.
      Warm, matching the bone it sits on — a neutral grey tint over warm bone
      reads as dirt. See the `liquid-glass` utility for the inverse. */
-  --lg-tint: oklch(0.28 0.012 85 / 0.07);
-  --lg-rim: oklch(0.28 0.012 85 / 0.14);
-  --lg-lip: oklch(1 0 0 / 0.55);
-  --lg-keel: oklch(0.28 0.012 85 / 0.05);
+  --lg-tint: rgba(255, 255, 255, 0.02);
+  --lg-rim: rgba(255, 255, 255, 0.1);
+  --lg-lip: rgba(255, 255, 255, 0.2);
+  --lg-keel: rgba(0, 0, 0, 0.05);
+  --lg-cast: rgba(0, 0, 0, 0.15);
 
   /* ── ambient glow (indigo key, clay counter-light) ─────────────────────── */
   --glow: oklch(0.45 0.13 271 / 0.28);
@@ -393,25 +394,23 @@
    Declare the standard property alone and let the toolchain prefix it. */
 @utility liquid-glass {
   background: var(--lg-tint);
-  backdrop-filter: blur(14px) saturate(220%) contrast(1.08);
+  backdrop-filter: blur(40px) saturate(150%);
   border-color: var(--lg-rim);
   box-shadow:
-    0 1px 2px var(--nm-cast-1),
-    0 10px 30px var(--nm-cast-2),
-    inset 0 1px 0 var(--lg-lip),
-    inset 0 -1px 0 var(--lg-keel);
+    0 20px 40px -10px var(--lg-cast),
+    inset 0 1px 1px var(--lg-lip),
+    inset 0 -1px 1px var(--lg-keel);
 }
 
-/* Over a DARK band the pane inverts: it tints up with white, its rim brightens,
-   and its drop shadow has to go black — the warm brown cast of the light theme
-   is invisible on indigo and just muddies the seam. */
+/* Over a DARK band, the glass itself doesn't need to change much because true Liquid Glass
+   is transparent and relies on blur/sheen, but we subtly darken the rim and shadow so it
+   reads perfectly on a dark background. */
 [data-over="dark"] {
-  --lg-tint: oklch(1 0 0 / 0.1);
-  --lg-rim: oklch(1 0 0 / 0.18);
-  --lg-lip: oklch(1 0 0 / 0.3);
-  --lg-keel: oklch(0 0 0 / 0.22);
-  --nm-cast-1: oklch(0 0 0 / 0.3);
-  --nm-cast-2: oklch(0 0 0 / 0.38);
+  --lg-tint: rgba(255, 255, 255, 0.05);
+  --lg-rim: rgba(255, 255, 255, 0.1);
+  --lg-lip: rgba(255, 255, 255, 0.2);
+  --lg-keel: rgba(0, 0, 0, 0.2);
+  --lg-cast: rgba(0, 0, 0, 0.4);
 }
 
 /* ═══ GLASS ═════════════════════════════════════════════════════════════════

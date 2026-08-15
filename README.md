@@ -1009,9 +1009,80 @@ page shows a banner while dry-run is active.
 
 - Import the repo, set all env vars from `.env.example` (including `SUPABASE_SERVICE_ROLE_KEY`
   and `CRON_SECRET`).
-- `vercel.json` schedules `/api/cron/reminders` every 15 minutes; Vercel passes `CRON_SECRET`
-  as a bearer token automatically. The cron sends due reminders/follow-ups, retries failed
-  messages, marks no-shows, and purges soft-deleted patients after 30 days.
+- `/api/cron/reminders` sends due reminders/follow-ups, retries failed messages, marks
+  no-shows, and purges soft-deleted patients after 30 days. Vercel passes `CRON_SECRET` as a
+  bearer token automatically. Without it the route answers **503**, not 500 — an unconfigured
+  deployment should not look like a broken endpoint.
+
+### The build does not need env vars — the running site does
+
+`next build` completes with no environment at all (verified by building with `.env.local`
+moved aside). Every Supabase call sits behind a request-time code path, so a missing variable
+never fails the build — it fails **at runtime**, on a deployment that looks green. If the
+deployed site renders but every data-backed page errors, check the project's env vars first;
+nothing upstream will have complained.
+
+The same goes for the database itself. Supabase pauses free-tier projects after a period of
+inactivity, and a paused project's subdomain **stops resolving entirely** (`ENOTFOUND`, not a
+5xx). The marketing page still renders — it degrades to the logged-out view — so the site can
+look healthy while every authenticated surface is dead. Confirm the project is `ACTIVE_HEALTHY`
+before blaming the deployment.
+
+### Cron frequency is a plan limit, and it silently changes behaviour
+
+`vercel.json` originally scheduled the cron every 15 minutes. **Vercel's Hobby plan rejects
+sub-daily cron schedules at deploy time**, so that schedule cannot ship on Hobby; the committed
+schedule is now once daily (`0 8 * * *`).
+
+That change used to break reminders outright. The route looked for appointments starting inside
+a fixed 15-minute window at each offset — correct only at the original cadence. Run once a day,
+it inspected one 15-minute slice of each day and never saw anything else, delivering roughly 1%
+of reminders while still returning `{ok: true}`. The window is gone: each run now sweeps
+everything whose moment has arrived and that has not been sent, which is correct at any cadence.
+
+Cadence still governs *quality* — a daily run cannot deliver a 2-hour reminder near its mark.
+For the intended timing on Hobby, leave the daily Vercel cron as a backstop and point an
+external scheduler (GitHub Actions, cron-job.org) at the endpoint every 15 minutes:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/cron/reminders
+```
+
+On Pro, restore `*/15 * * * *` in `vercel.json` and drop the external scheduler.
+
+### `.vercelignore`
+
+`vercel deploy` from the CLI uploads the working directory, not the git index, so untracked
+files next to the source go up with it — this repo accumulates raw video masters of tens of MB
+each. `.vercelignore` keeps those, the vendored skill/agent directories, and the test output
+out of every upload. Git-integration deployments only ever see committed files, so it is
+belt-and-braces there and load-bearing for CLI deploys.
+
+### `public/hero.mp4` — three properties that must hold
+
+The shipped clip is **753KB / 3.58s**, cut from a 10s, 11MB original. Whatever tool ever
+regenerates it, all three of these have to survive:
+
+1. **Cut to the clean window.** The source carried a green particle artifact reading as a
+   rendering fault across roughly its first five seconds. Score it by *worst 8×8 tile*, never
+   by frame mean — a mean dilutes a localised spray below any sensible threshold and reports
+   a badly damaged frame as clean. Peak green cast was 85 before the cut and is 24.9 after,
+   the remainder being foliage in the shot. Because the cut is baked in, no JavaScript
+   playback-window guard is needed.
+2. **`-movflags +faststart`.** Puts the `moov` index ahead of `mdat` so the browser can start
+   playing after a few KB instead of downloading the whole file first. An intermediate version
+   of this asset lost the flag and had `moov` sitting after 2MB of `mdat`. If it is ever lost
+   again the fix is a remux, not a re-encode — no frame is touched:
+   `ffmpeg -i in.mp4 -c copy -movflags +faststart out.mp4`
+3. **`public/hero-poster.jpg` must be frame 0 of the shipped clip.** Everyone who opts out of
+   the video (reduced motion, Data Saver, 2G) sees only the poster, and everyone else sees it
+   during load — so a poster taken from any other frame turns the handoff into a visible cut.
+
+```bash
+ffmpeg -ss 6.4 -i src.mp4 -t 3.55 -an -c:v libx264 -crf 26 \
+       -pix_fmt yuv420p -movflags +faststart public/hero.mp4
+ffmpeg -i public/hero.mp4 -frames:v 1 -q:v 4 public/hero-poster.jpg
+```
 
 ## Security invariants (do not regress)
 

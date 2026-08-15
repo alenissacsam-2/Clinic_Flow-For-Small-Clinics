@@ -283,8 +283,8 @@ export function TryIt() {
                             key={m.id}
                             data-demo-anim
                             layout
-                            initial={{ opacity: 0, y: -6 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, transform: "translateY(-6px)" }}
+                            animate={{ opacity: 1, transform: "translateY(0px)" }}
                             exit={{ opacity: 0, y: -6 }}
                             transition={{ duration: 0.2 }}
                             className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-sidebar/50 px-3.5 py-2.5"
@@ -328,7 +328,7 @@ export function TryIt() {
                         disabled={chosen.length === 0}
                         className={cn(
                           "inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold",
-                          "transition-all duration-200",
+                          "transition-colors duration-200",
                           chosen.length === 0
                             ? "cursor-not-allowed bg-white/8 text-sidebar-foreground/35"
                             : "bg-sidebar-primary text-sidebar-primary-foreground hover:brightness-110",
@@ -450,8 +450,8 @@ function Slide({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
       data-demo-anim
-      initial={{ opacity: 0, x: 12 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, transform: "translateX(12px)" }}
+      animate={{ opacity: 1, transform: "translateX(0px)" }}
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
     >
@@ -523,9 +523,9 @@ function Bubble({ children, delay }: { children: React.ReactNode; delay: number 
   return (
     <motion.div
       data-demo-anim
-      initial={{ opacity: 0, y: 8, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 260, damping: 22, delay }}
+      initial={{ opacity: 0, transform: "translateY(8px) scale(0.96)" }}
+      animate={{ opacity: 1, transform: "translateY(0px) scale(1)" }}
+      transition={{ type: "spring", bounce: 0, duration: 0.4, delay }}
       className="max-w-[92%] rounded-2xl rounded-tl-sm bg-card px-3 py-2 text-[0.7rem] leading-relaxed text-card-foreground"
     >
       {children}

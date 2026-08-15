@@ -4,9 +4,11 @@ import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 
 import { cn } from "@/lib/utils"
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import {
   Dialog,
-  DialogContent,
+  DialogPortal,
+  DialogOverlay,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -38,30 +40,36 @@ function CommandDialog({
   description = "Search for a command to run...",
   children,
   className,
-  showCloseButton = false,
   ...props
 }: Omit<React.ComponentProps<typeof Dialog>, "children"> & {
   title?: string
   description?: string
   className?: string
-  showCloseButton?: boolean
   children: React.ReactNode
 }) {
+  // No `showCloseButton`: this renders `Dialog.Popup` directly rather than
+  // `DialogContent`, and the popup has no close button to toggle. Leaving the
+  // prop in the signature would advertise a control that silently does nothing.
+  // Nothing passes it today — the palette closes on Escape and on selection.
   return (
     <Dialog {...props}>
       <DialogHeader className="sr-only">
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
-      <DialogContent
-        className={cn(
-          "top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0",
-          className
-        )}
-        showCloseButton={showCloseButton}
-      >
-        {children}
-      </DialogContent>
+      <DialogPortal>
+        <DialogOverlay className="duration-0 data-closed:animate-none data-open:animate-none" />
+        <DialogPrimitive.Popup
+          className={cn(
+            "fixed left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 gap-4 border border-edge/25 bg-popover text-sm text-popover-foreground shadow-nm-float outline-none sm:max-w-sm",
+            "top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0",
+            "duration-0 data-closed:animate-none data-open:animate-none",
+            className
+          )}
+        >
+          {children}
+        </DialogPrimitive.Popup>
+      </DialogPortal>
     </Dialog>
   )
 }

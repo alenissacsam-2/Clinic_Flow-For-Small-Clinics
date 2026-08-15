@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { serverEnv, hasServiceRole } from "@/lib/env"
+import crypto from "node:crypto"
+import { hasServiceRole } from "@/lib/env"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { clinicSettings, type Clinic } from "@/lib/clinic"
 import { istDateKey } from "@/lib/format"
@@ -12,13 +13,49 @@ export const dynamic = "force-dynamic"
 type PatientLite = { id: string; full_name: string; phone: string }
 
 /**
- * Runs every ~15 min (Vercel Cron). Sends due reminders and follow-ups,
- * retries failed messages, and marks stale appointments as no-shows.
- * Protected by CRON_SECRET.
+ * Sends due reminders and follow-ups, retries failed messages, and marks stale
+ * appointments as no-shows. Protected by CRON_SECRET.
+ *
+ * ── This must not assume how often it runs ────────────────────────────────
+ * It used to. Reminders were found by asking for appointments starting inside a
+ * fixed **15-minute window** at each offset, which is only correct if the cron
+ * fires every 15 minutes — the schedule `vercel.json` originally carried.
+ *
+ * Vercel's Hobby plan rejects sub-daily cron schedules at deploy time, so that
+ * schedule cannot ship on Hobby and was changed to once a day. Nothing failed
+ * loudly: the endpoint still returned `{ok: true}`, still sent follow-ups, still
+ * closed out no-shows. It just silently stopped sending nearly every reminder,
+ * because a once-a-day run only ever inspects one 15-minute slice of each day
+ * and every appointment outside that slice is invisible. A daily run catches
+ * roughly 1% of them.
+ *
+ * So the window is gone. Each run now sweeps everything whose moment has
+ * arrived and that has not been sent yet, which is correct at *any* cadence —
+ * every 15 minutes, hourly, or once a day. `reminders_sent` was already the
+ * idempotency record and does the same job here; the unique index
+ * `wa_reminder_uniq` backs it at the database.
+ *
+ * Cadence still decides *quality*: a daily run cannot deliver a 2-hour reminder
+ * near its mark. To get the intended timing, point an external scheduler at
+ * this endpoint every 15 minutes with the same bearer token — see README.
  */
 export async function GET(request: NextRequest) {
-  const auth = request.headers.get("authorization")
-  if (auth !== `Bearer ${serverEnv.cronSecret}`) {
+  // Read directly rather than through `serverEnv.cronSecret`, which throws on a
+  // missing value. An uncaught throw here is a 500 with a stack trace, which
+  // Vercel's scheduler treats as a failing job and retries — noisy, and it
+  // reads like a broken endpoint rather than an unconfigured one. A missing
+  // secret is a deployment that is not finished, so say that and fail closed.
+  const secret = process.env.CRON_SECRET
+  if (!secret) {
+    console.error("[cron] CRON_SECRET is not set — refusing to run. Set it in the Vercel project's environment variables; the scheduler sends it as a bearer token.")
+    return new NextResponse("Cron is not configured", { status: 503 })
+  }
+
+  const auth = request.headers.get("authorization") ?? ""
+  const expected = `Bearer ${secret}`
+  const a = Buffer.from(auth)
+  const b = Buffer.from(expected)
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
     return new NextResponse("Unauthorized", { status: 401 })
   }
   if (!hasServiceRole()) {
@@ -38,17 +75,17 @@ export async function GET(request: NextRequest) {
   for (const clinic of (clinics ?? []) as Clinic[]) {
     const settings = clinicSettings(clinic)
 
-    // 1. Reminders per configured offset
-    for (const h of settings.reminder_offsets_hours) {
-      const winStart = new Date(now.getTime() + h * 3600_000)
-      const winEnd = new Date(winStart.getTime() + 15 * 60_000)
+    // 1. Reminders per configured offset, largest first.
+    const offsets = [...settings.reminder_offsets_hours].sort((a, b) => b - a)
+    if (offsets.length > 0) {
+      const horizon = new Date(now.getTime() + offsets[0] * 3600_000)
       const { data: appts } = await admin
         .from("appointments")
         .select("id, starts_at, reminders_sent, patient:patients(id, full_name, phone)")
         .eq("clinic_id", clinic.id)
         .eq("status", "confirmed")
-        .gte("starts_at", winStart.toISOString())
-        .lt("starts_at", winEnd.toISOString())
+        .gte("starts_at", now.toISOString())
+        .lt("starts_at", horizon.toISOString())
 
       for (const a of (appts ?? []) as unknown as {
         id: string
@@ -56,11 +93,30 @@ export async function GET(request: NextRequest) {
         reminders_sent: number[]
         patient: PatientLite | null
       }[]) {
-        if (!a.patient || (a.reminders_sent ?? []).includes(h)) continue
-        await notifyApptReminder(admin, clinic, { id: a.id, starts_at: a.starts_at, patient: a.patient }, h)
+        if (!a.patient) continue
+        const sent = a.reminders_sent ?? []
+        const hoursAway = (new Date(a.starts_at).getTime() - now.getTime()) / 3600_000
+
+        // Every offset whose moment has arrived and that has not gone out yet.
+        const due = offsets.filter((h) => hoursAway <= h && !sent.includes(h))
+        if (due.length === 0) continue
+
+        // Send only the most urgent of them. A patient who books two hours
+        // before their slot has technically "passed" the 24-hour mark too, and
+        // firing both would put two messages on their phone at once, one of
+        // them claiming a day's notice it cannot give. The coarser offsets are
+        // recorded as handled without being sent — their moment is gone, and
+        // leaving them unmarked would re-send this every single run.
+        const soonest = due[due.length - 1]
+        await notifyApptReminder(
+          admin,
+          clinic,
+          { id: a.id, starts_at: a.starts_at, patient: a.patient },
+          soonest,
+        )
         await admin
           .from("appointments")
-          .update({ reminders_sent: [...(a.reminders_sent ?? []), h] })
+          .update({ reminders_sent: [...sent, ...due] })
           .eq("id", a.id)
         counters.reminders++
       }

@@ -83,7 +83,7 @@ const SCRIPT: Scene[] = [
   },
 ]
 
-const rowSpring = { type: "spring", stiffness: 260, damping: 26 } as const
+const rowSpring = { type: "spring", bounce: 0, duration: 0.4 } as const
 
 export function AnimatedMockup() {
   const reduced = useReducedMotion()
@@ -153,8 +153,8 @@ export function AnimatedMockup() {
                 <motion.div
                   key={r.token}
                   layout
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, transform: "translateY(14px)" }}
+                  animate={{ opacity: 1, transform: "translateY(0px)" }}
                   exit={{ opacity: 0, y: -14 }}
                   transition={rowSpring}
                   // Rows sink into the card they sit in — recessed slots
@@ -172,8 +172,8 @@ export function AnimatedMockup() {
                     <AnimatePresence mode="wait" initial={false}>
                       <motion.span
                         key={r.status}
-                        initial={{ opacity: 0, scale: 0.7 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, transform: "scale(0.7)" }}
+                        animate={{ opacity: 1, transform: "scale(1)" }}
                         exit={{ opacity: 0, scale: 0.7 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
                         className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", s.badge)}
@@ -195,10 +195,10 @@ export function AnimatedMockup() {
           {scene.sent && (
             <motion.div
               key={scene.sent}
-              initial={{ opacity: 0, scale: 0.85, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 6 }}
-              transition={{ type: "spring", stiffness: 300, damping: 22 }}
+              initial={{ opacity: 0, transform: "scale(0.85) translateY(10px)" }}
+              animate={{ opacity: 1, transform: "scale(1) translateY(0px)" }}
+              exit={{ opacity: 0, transform: "scale(0.95)" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
               className="rounded-xl border border-edge/25 bg-card text-card-foreground px-4 py-3 shadow-nm-float"
             >
               <div className="flex items-center gap-2">
@@ -253,8 +253,8 @@ function FocusChip({
       <AnimatePresence mode="wait" initial={false}>
         <motion.p
           key={name ?? "none"}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, transform: "translateY(6px)" }}
+          animate={{ opacity: 1, transform: "translateY(0px)" }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="mt-0.5 truncate text-sm font-semibold"

@@ -225,9 +225,10 @@ function FloatingFragment({
       data-parallax
       style={{ y: scrollY, opacity: popOpacity, scale: popScale }}
       className={className}
+      suppressHydrationWarning
     >
-      <motion.div data-parallax style={{ x, y }}>
-        <div className="animate-float-slow" style={{ animationDelay: delay }}>
+      <motion.div data-parallax style={{ x, y }} suppressHydrationWarning>
+        <div className="animate-float-slow" style={{ animationDelay: delay }} suppressHydrationWarning>
           {children}
         </div>
       </motion.div>

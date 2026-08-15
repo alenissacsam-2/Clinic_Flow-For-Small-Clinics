@@ -199,7 +199,7 @@ export function SiteHeader() {
             // Without `overflow-hidden` a rectangular gradient would square off
             // the pill's curved ends.
             "header-morph liquid-glass relative isolate mx-auto flex items-center justify-between gap-4 overflow-hidden",
-            "max-w-6xl rounded-full border border-transparent px-2 py-3",
+            "max-w-6xl rounded-full border px-2 py-3",
             "group-data-[scrolled=true]:max-w-3xl group-data-[scrolled=true]:px-3",
             "group-data-[scrolled=true]:py-2",
           )}
@@ -221,7 +221,7 @@ export function SiteHeader() {
               that negative value to this pill alone. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-1/2 bg-gradient-to-b from-white/40 to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-1/2 bg-gradient-to-b from-white/10 to-transparent"
           />
           <Link
             href="/"
