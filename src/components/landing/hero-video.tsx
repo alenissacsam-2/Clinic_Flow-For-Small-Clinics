@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react"
 import { signalHeroReady } from "./boot"
 
 /**
- * The hero's background film — a silent 3.6s clinic loop behind the headline.
+ * The hero's background film — a silent 10s clinic loop behind the headline.
  *
  * ── Why playback is started in an effect and not by `autoPlay` ────────────
  * Three groups should never be made to download a decorative video at all:
@@ -14,38 +14,35 @@ import { signalHeroReady } from "./boot"
  * be made on the client — but branching the JSX on it would hydration-mismatch,
  * because the server cannot know any of it.
  *
- * This clip is a single MP4 only — no WebM sibling. It is 753KB, down from an
- * 11MB original by way of a 2MB intermediate, which is the right weight for the
- * low-end-Android audience the rest of this file protects.
+ * This clip is a single MP4 only — no WebM sibling. It is 2.0MB, down from an
+ * 11MB original, which is the right weight for the low-end-Android audience
+ * the rest of this file protects.
  *
- * ── The file is pre-cut, and that is load-bearing ─────────────────────────
- * The source was 10s and carried a **green particle artifact** — a spray that
- * erupted across the frame and read as a rendering fault, not as light. Measured
- * by worst 8×8 tile (a frame *mean* dilutes a localised spray into nothing and
- * will tell you it is fine): peak green cast 85 across roughly the first five
- * seconds. `hero.mp4` is now the clean tail of that clip, cut with
+ * ── A known visual defect ships here, by explicit decision ────────────────
+ * Roughly the first five seconds carry a **green particle artifact** — a spray
+ * that erupts across the frame and reads as a rendering fault, not as light.
+ * Measured by worst 8×8 tile (a frame *mean* dilutes a localised spray into
+ * nothing and will call a badly damaged frame clean): peak green cast 85.
  *
- *     ffmpeg -ss 6.4 -i src.mp4 -t 3.55 -an -c:v libx264 -crf 26 \
- *            -pix_fmt yuv420p -movflags +faststart hero.mp4
- *
- * and re-measures at a peak of 24.9, which is foliage in the background of the
- * shot rather than the artifact. Because the cut is baked into the file, no
- * JavaScript playback-window guard is needed and `loop` does the whole job.
+ * An earlier version of this file clamped playback to the clean 6.4–9.95s tail
+ * to hide it, first with a JS playback-window guard, later by shipping only
+ * that pre-cut 3.5s window. Both were reverted on explicit request: the full
+ * 10s loop reads as less abrupt than the short one did, and that was judged
+ * worth the defect being visible. If that trade is ever revisited, the cut
+ * command and the measurement method are in git history on this file.
  *
  * Two things must survive any re-encode:
  *
  * 1. **`-movflags +faststart`.** It puts `moov` — the index a player needs
  *    before it can present anything — ahead of `mdat`. Without it the browser
- *    downloads the entire file before the first frame appears. The 2MB
- *    intermediate lost this flag and had `moov` sitting after 2MB of `mdat`.
- *    If a tool ever produces the file without it, the fix is a remux, not a
+ *    downloads the entire file before the first frame appears. This asset has
+ *    lost the flag twice already coming out of two different compressors; if
+ *    a tool ever produces the file without it, the fix is a remux, not a
  *    re-encode: `ffmpeg -i in.mp4 -c copy -movflags +faststart out.mp4`.
  * 2. **`public/hero-poster.jpg` must be frame 0 of whatever ships.** Everyone
  *    who opts out below sees only the poster, and everyone else sees it during
  *    load, so a poster from a different frame makes the handoff a visible cut.
- *    It is currently within JPEG quantisation noise of frame 0 (mean channel
- *    difference 1.6/255). Regenerate with
- *    `ffmpeg -i hero.mp4 -frames:v 1 -q:v 4 hero-poster.jpg`.
+ *    Regenerate with `ffmpeg -i hero.mp4 -frames:v 1 -q:v 4 hero-poster.jpg`.
  *
  * So the markup is identical for everyone: a `<video>` with a poster, no
  * `autoplay` attribute, and `preload="none"` so not a single byte is fetched

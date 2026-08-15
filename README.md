@@ -1126,29 +1126,31 @@ each. `.vercelignore` keeps those, the vendored skill/agent directories, and the
 out of every upload. Git-integration deployments only ever see committed files, so it is
 belt-and-braces there and load-bearing for CLI deploys.
 
-### `public/hero.mp4` — three properties that must hold
+### `public/hero.mp4` — a known defect ships here, on purpose
 
-The shipped clip is **753KB / 3.58s**, cut from a 10s, 11MB original. Whatever tool ever
-regenerates it, all three of these have to survive:
+The shipped clip is **2.0MB / 10s** — the full original loop, compressed down from 11MB. It
+carries a **green particle artifact** for roughly its first five seconds — measured by *worst
+8×8 tile*, never by frame mean (a mean dilutes a localised spray below any sensible threshold
+and reports a badly damaged frame as clean): peak green cast 85.
 
-1. **Cut to the clean window.** The source carried a green particle artifact reading as a
-   rendering fault across roughly its first five seconds. Score it by *worst 8×8 tile*, never
-   by frame mean — a mean dilutes a localised spray below any sensible threshold and reports
-   a badly damaged frame as clean. Peak green cast was 85 before the cut and is 24.9 after,
-   the remainder being foliage in the shot. Because the cut is baked in, no JavaScript
-   playback-window guard is needed.
-2. **`-movflags +faststart`.** Puts the `moov` index ahead of `mdat` so the browser can start
-   playing after a few KB instead of downloading the whole file first. An intermediate version
-   of this asset lost the flag and had `moov` sitting after 2MB of `mdat`. If it is ever lost
-   again the fix is a remux, not a re-encode — no frame is touched:
+An earlier version of this file hid the defect by clamping playback to the clean 6.4–9.95s tail,
+first with a JS playback-window guard, then by shipping only that 3.5s window as the whole file.
+**Both were reverted on request** — the full 10s loop reads as less abrupt than the short one
+did, and that was judged worth the defect being visible. If this trade is ever revisited, the cut
+command and measurement method are in git history on `hero-video.tsx`.
+
+Two things must survive any re-encode:
+
+1. **`-movflags +faststart`.** Puts the `moov` index ahead of `mdat` so the browser can start
+   playing after a few KB instead of downloading the whole file first. This asset has lost the
+   flag twice already coming out of two different compressors. If it happens again the fix is a
+   remux, not a re-encode — no frame is touched:
    `ffmpeg -i in.mp4 -c copy -movflags +faststart out.mp4`
-3. **`public/hero-poster.jpg` must be frame 0 of the shipped clip.** Everyone who opts out of
+2. **`public/hero-poster.jpg` must be frame 0 of the shipped clip.** Everyone who opts out of
    the video (reduced motion, Data Saver, 2G) sees only the poster, and everyone else sees it
    during load — so a poster taken from any other frame turns the handoff into a visible cut.
 
 ```bash
-ffmpeg -ss 6.4 -i src.mp4 -t 3.55 -an -c:v libx264 -crf 26 \
-       -pix_fmt yuv420p -movflags +faststart public/hero.mp4
 ffmpeg -i public/hero.mp4 -frames:v 1 -q:v 4 public/hero-poster.jpg
 ```
 
