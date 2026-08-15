@@ -5,6 +5,7 @@ import { requireDoctor, clinicSettings, logoUrl } from "@/lib/clinic"
 import { env } from "@/lib/env"
 import { PageHeader } from "@/components/page-header"
 import { SettingsForms, type SettingsData } from "@/components/settings/settings-forms"
+import { WhatsAppBookingCard } from "@/components/settings/whatsapp-booking-card"
 import {
   MembersSection,
   type MemberRow,
@@ -80,6 +81,7 @@ export default async function SettingsPage() {
     <div>
       <PageHeader title="Settings" description="Clinic profile, hours, fees, team and reminders." />
       <div className="mb-6 grid gap-3 sm:grid-cols-2">
+        <WhatsAppBookingCard slug={clinic.slug} />
         <div className="rounded-xl border border-edge/20 bg-card shadow-nm-raised p-4 text-sm">
           <p className="font-medium">Your public booking link</p>
           <a href={bookingUrl} className="break-all text-primary underline" target="_blank" rel="noreferrer">

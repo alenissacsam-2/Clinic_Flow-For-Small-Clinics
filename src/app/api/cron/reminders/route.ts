@@ -6,6 +6,7 @@ import { clinicSettings, type Clinic } from "@/lib/clinic"
 import { istDateKey } from "@/lib/format"
 import { notifyApptReminder, notifyFollowupDue } from "@/lib/whatsapp/triggers"
 import { sendQueuedMessage } from "@/lib/whatsapp/enqueue"
+import { purgeExpiredSessions } from "@/lib/whatsapp/bot/store"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -188,6 +189,11 @@ export async function GET(request: NextRequest) {
   // 6. Purge spent/expired booking OTPs (older than 24h).
   const otpCutoff = new Date(now.getTime() - 24 * 3600_000).toISOString()
   await admin.from("booking_otps").delete().lt("created_at", otpCutoff)
+
+  // 7. Purge lapsed WhatsApp conversations. An abandoned half-finished booking
+  //    is a name and a phone number with no remaining purpose, which is exactly
+  //    the sort of thing DPDP says not to keep.
+  await purgeExpiredSessions(admin, now)
 
   return NextResponse.json({ ok: true, ...counters })
 }

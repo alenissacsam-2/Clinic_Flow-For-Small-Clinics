@@ -1005,6 +1005,74 @@ page shows a banner while dry-run is active.
 5. Submit the six **utility** templates (see `src/lib/whatsapp/templates.ts`) in English and Hindi.
 6. Fill the `WHATSAPP_*` env vars and redeploy — sends switch from dry-run to real automatically.
 
+## Booking from inside WhatsApp (`src/lib/whatsapp/bot/`)
+
+Patients book by messaging the clinic, without ever opening the web page. The module splits
+hard along an I/O line, and that split is what makes it testable:
+
+| file | pure? | job |
+| --- | --- | --- |
+| `types.ts` | ✅ | vocabulary, plus `WA_LIMITS` — Meta's interactive-message caps |
+| `copy.ts` | ✅ | every word the bot says |
+| `machine.ts` | ✅ | `reduce(session, event, ctx)` → replies, next session, at most one action |
+| `codec.ts` | ✅ | session ⇄ row, expiry, deep-link parsing |
+| `store.ts` | ❌ | `wa_sessions` reads and writes |
+| `routing.ts` | ❌ | which clinic is this message for |
+| `handler.ts` | ❌ | the orchestration: dedupe → route → load → reduce → act → reply → persist |
+
+**The reducer books nothing.** It returns an `Action`; `handler.ts` performs it and feeds the
+outcome back as another event. So "the slot was taken while the patient typed their name" is a
+unit test, not something you discover in production.
+
+**No NLU.** Every reply carries an id this code authored. It cannot mis-parse a time, is immune
+to typos, voice notes and autocorrect, and costs no model call. The only free text accepted is
+the patient's name.
+
+**No OTP.** `create_verified_booking` exists because the web page cannot trust a typed phone
+number. Over WhatsApp, Meta has already established that the sender controls the number, and the
+webhook signature proves the message came from Meta. Asking a patient to verify the phone they
+are texting from is theatre. `create_whatsapp_booking` is therefore **service-role only** — the
+caller is the webhook, never a browser.
+
+**Idempotency is a database constraint.** Meta redelivers on any non-prompt-2xx, and two
+deliveries can hit two concurrent serverless invocations. `handler.ts` inserts the inbound row
+first and treats unique violation `23505` as "already handled"; select-then-insert would let both
+invocations through and book twice. See `wa_messages_inbound_uniq` in migration 0034.
+
+**Clinic routing is the multi-tenant trap.** One Meta number serves every clinic, so an inbound
+message carries no tenant. Resolution order: deep-link code → active session → phone matching
+exactly one clinic → ask. The parser requires the `BOOK ` prefix and refuses a bare slug —
+patients type "hello" and "doctor", and one of those will eventually collide with somebody's
+slug. Give each clinic `wa.me/<number>?text=BOOK%20<slug>` for its page, buttons and QR posters.
+
+**The bot can only ever reply.** Meta allows free-form messages only within 24 hours of the
+patient's last inbound message, which is exactly when the bot speaks — so it needs no approved
+template and works the day it ships. Anything that *starts* a conversation is a template and
+belongs in `templates.ts`, not here. If a reply is ever refused with code `131047` the window has
+closed; that is a lapsed conversation, not a broken integration, and `handler.ts` logs it as such.
+
+**Rate limiting** is 20 messages per rolling minute per phone, enforced by `wa_rate_allow` in one
+statement so two concurrent invocations cannot both read 19 and both write 20. Over-limit
+messages are dropped *silently*: replying "you are sending too fast" is itself a billable
+outbound message, so it would fund exactly the traffic it suppresses. The counter lives on
+`wa_sessions` because `clinic_id` there is nullable — traffic we cannot attribute to any clinic
+is the traffic most worth throttling, and it never reaches the state machine at all.
+
+### Turning it on
+
+Set `NEXT_PUBLIC_WHATSAPP_NUMBER` to the business number patients message. Everything
+patient-facing is hidden until it is set, rather than rendering a link that goes nowhere:
+
+- **Settings** shows each clinic its `wa.me` link, a copy button, and a printable QR code for
+  the reception desk.
+- **The public booking page** offers "Book on WhatsApp instead" above the form — a patient who
+  would rather use the app they already have open, with no OTP to wait for, should not have to
+  scroll past a form to find out they can.
+
+`tests/unit/wa-link.test.ts` pins the contract between the two halves of routing: what the link
+prefills is exactly what `parseClinicCode` accepts. They live in different modules and would
+otherwise drift apart silently.
+
 ## Deployment (Vercel)
 
 - Import the repo, set all env vars from `.env.example` (including `SUPABASE_SERVICE_ROLE_KEY`

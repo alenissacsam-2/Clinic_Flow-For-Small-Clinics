@@ -4,11 +4,12 @@ import { getBookingContext } from "@/lib/booking-context"
 import { istDateKey, istWeekday } from "@/lib/format"
 import { buildBookingDays, relativeDay } from "@/lib/booking-days"
 import { BookingWidget, type BookingClinic } from "@/components/booking/booking-widget"
+import { whatsappBookingLink } from "@/lib/whatsapp/link"
 import { PublicShell, PublicCard } from "@/components/public-shell"
 import { logoUrlFromPath } from "@/lib/clinic"
 import { cn } from "@/lib/utils"
 import { TONE } from "@/lib/status"
-import { MapPin, Phone, Clock, CalendarX2 } from "lucide-react"
+import { MapPin, Phone, Clock, CalendarX2, MessageCircle } from "lucide-react"
 
 /**
  * Per-clinic title, description and OG card. This link is the one doctors
@@ -118,6 +119,8 @@ export default async function BookingPage({
       )}`
     : null
 
+  const waLink = whatsappBookingLink(slug)
+
   return (
     <PublicShell logo={clinicLogo} brandName={clinic.name}>
       <PublicCard className="animate-rise mb-6">
@@ -204,6 +207,23 @@ export default async function BookingPage({
 
       <PublicCard className="animate-rise [animation-delay:80ms]">
         <h2 className="mb-4 font-heading text-base font-semibold">Book an appointment</h2>
+
+        {/* Offered above the form, not below it. A patient who would rather do
+            this in WhatsApp — the app they already have open, with no OTP to
+            wait for — should not have to scroll past a form to discover that
+            they can. Rendered only when a WhatsApp number is configured. */}
+        {waLink && (
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noreferrer"
+            className="mb-4 flex items-center justify-center gap-2 rounded-lg border border-edge/20 bg-card px-4 py-2.5 text-sm font-medium shadow-nm-raised transition-colors hover:bg-accent/40"
+          >
+            <MessageCircle className="size-4 text-primary" />
+            Book on WhatsApp instead
+          </a>
+        )}
+
         <BookingWidget
           slug={slug}
           days={days}

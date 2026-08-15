@@ -3,6 +3,8 @@ import crypto from "node:crypto"
 import { serverEnv, hasServiceRole } from "@/lib/env"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { normalizePhone } from "@/lib/format"
+import { handleBotMessage } from "@/lib/whatsapp/bot/handler"
+import type { Inbound } from "@/lib/whatsapp/bot/types"
 
 export const runtime = "nodejs"
 
@@ -19,7 +21,33 @@ export async function GET(request: NextRequest) {
 }
 
 type StatusEntry = { id: string; status: string; errors?: { title?: string }[] }
-type InboundMsg = { from: string; text?: { body: string } }
+
+/**
+ * Meta's inbound message shape, narrowed to what the bot reads.
+ *
+ * Button taps and list selections arrive under `interactive` with different
+ * inner keys, which is Meta's distinction, not ours — the bot only cares which
+ * id came back. Everything else (audio, image, location, sticker) is something
+ * it cannot read, and is answered honestly rather than ignored.
+ */
+type InboundMsg = {
+  id: string
+  from: string
+  type?: string
+  text?: { body: string }
+  interactive?: {
+    type?: string
+    button_reply?: { id: string; title?: string }
+    list_reply?: { id: string; title?: string }
+  }
+}
+
+function toInbound(msg: InboundMsg): Inbound {
+  const reply = msg.interactive?.button_reply?.id ?? msg.interactive?.list_reply?.id
+  if (reply) return { type: "reply", id: reply }
+  if (typeof msg.text?.body === "string") return { type: "text", body: msg.text.body }
+  return { type: "unsupported" }
+}
 
 export async function POST(request: NextRequest) {
   const raw = await request.text()
@@ -95,6 +123,21 @@ function mapStatus(s: string): "sent" | "delivered" | "read" | "failed" | null {
   return null
 }
 
+/**
+ * Hand one inbound message to the booking bot.
+ *
+ * This replaces a loop that fanned every message out across *every* clinic the
+ * phone number appeared in, wrote a log row to each, and let a bare "CANCEL"
+ * flag an appointment at all of them at once. That was tolerable while inbound
+ * only ever set a flag; it is not tolerable now that a message can create an
+ * appointment. `resolveClinic` picks exactly one tenant or asks.
+ *
+ * Failures are swallowed on purpose. Meta retries anything that is not a prompt
+ * 2xx, and a message that throws every time would be redelivered until the
+ * subscription is disabled — taking every *other* clinic's bot down with it.
+ * The insert in `claimInbound` has already recorded the message, so nothing is
+ * lost, and the error goes to the logs for a human.
+ */
 async function handleInbound(
   admin: ReturnType<typeof createAdminClient>,
   msg: InboundMsg,
@@ -105,42 +148,15 @@ async function handleInbound(
   } catch {
     return
   }
-  const body = msg.text?.body?.trim() ?? ""
+  if (!msg.id) return
 
-  const { data: patients } = await admin
-    .from("patients")
-    .select("id, clinic_id")
-    .eq("phone", phone)
-    .is("deleted_at", null)
-
-  for (const p of patients ?? []) {
-    await admin.from("wa_messages").insert({
-      clinic_id: p.clinic_id,
-      patient_id: p.id,
-      to_phone: phone,
-      direction: "in",
-      body,
-      status: "delivered",
+  try {
+    await handleBotMessage(admin, {
+      phone,
+      waMessageId: msg.id,
+      message: toInbound(msg),
     })
-
-    if (/^stop$/i.test(body)) {
-      await admin.from("patients").update({ whatsapp_opt_in: false }).eq("id", p.id)
-    } else if (/^cancel$/i.test(body)) {
-      const { data: next } = await admin
-        .from("appointments")
-        .select("id")
-        .eq("patient_id", p.id)
-        .in("status", ["pending", "confirmed"])
-        .gte("starts_at", new Date().toISOString())
-        .order("starts_at", { ascending: true })
-        .limit(1)
-        .maybeSingle()
-      if (next) {
-        await admin
-          .from("appointments")
-          .update({ cancellation_requested: true })
-          .eq("id", next.id)
-      }
-    }
+  } catch (e) {
+    console.error("[wa-webhook] bot failed for", msg.id, e)
   }
 }

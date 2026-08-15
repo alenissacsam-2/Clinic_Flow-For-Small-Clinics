@@ -1737,6 +1737,47 @@ export type Database = {
           },
         ]
       }
+      wa_sessions: {
+        Row: {
+          clinic_id: string | null
+          context: Json
+          expires_at: string
+          phone: string
+          rate_count: number
+          rate_window_start: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id?: string | null
+          context?: Json
+          expires_at: string
+          phone: string
+          rate_count?: number
+          rate_window_start?: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string | null
+          context?: Json
+          expires_at?: string
+          phone?: string
+          rate_count?: number
+          rate_window_start?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wa_sessions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1803,6 +1844,16 @@ export type Database = {
         }
         Returns: Json
       }
+      create_whatsapp_booking: {
+        Args: {
+          p_clinic_id: string
+          p_name: string
+          p_phone: string
+          p_reason: string | null
+          p_starts_at: string
+        }
+        Returns: Json
+      }
       dispense_stock: {
         Args: {
           p_allocations: Json
@@ -1844,6 +1895,10 @@ export type Database = {
       submit_payment_reference: {
         Args: { p_token: string; p_utr: string }
         Returns: Json
+      }
+      wa_rate_allow: {
+        Args: { p_limit: number; p_phone: string; p_window_seconds: number }
+        Returns: boolean
       }
       verify_booking_otp: {
         Args: {

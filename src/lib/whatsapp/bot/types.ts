@@ -11,9 +11,9 @@ import type { BookingDay } from "@/lib/booking-days"
  * `ClinicSettings` is not imported from `@/lib/clinic` on purpose — that module
  * is `server-only`, and pulling it in here would make the reducer unloadable in
  * a plain Node test environment for the sake of two fields.
+ *
+ * The conversation is English only; see the note at the top of `copy.ts`.
  */
-
-export type Lang = "en" | "hi"
 
 /* ── What arrives from the patient ──────────────────────────────────────── */
 
@@ -68,13 +68,19 @@ export const INITIAL_SESSION: Session = { state: "idle", clinicId: null }
 
 /* ── What the caller must load before invoking the reducer ──────────────── */
 
+/**
+ * No `lang`: the bot converses in English only. `ClinicSettings.template_lang`
+ * still selects the language of the outbound *templates* and is unaffected —
+ * see the note at the top of `copy.ts`.
+ */
 export type BotClinic = {
   id: string
+  /** Needed to read the slot grid, which is keyed by slug. */
+  slug: string
   name: string
   doctorName: string | null
   bookingEnabled: boolean
   bookingMode: "instant" | "approve"
-  lang: Lang
 }
 
 export type BotContext = {
